@@ -1,6 +1,3 @@
-/* eslint-disable require-jsdoc */
-// const ClientError = require('../../exceptions/ClientError');
-
 class AlbumsHandler {
   constructor(service, validator) {
     this._service = service;
@@ -14,7 +11,6 @@ class AlbumsHandler {
 
   async postAlbumsHandler(request, h) {
     this._validator.validateAlbumsPayload(request.payload);
-    // const {name, year} = request.payload;
 
     const albumsId = await this._service.addAlbums(request.payload);
 

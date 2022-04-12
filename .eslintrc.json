@@ -11,5 +11,8 @@
         "ecmaVersion": "latest"
     },
     "rules": {
+        "max-len": "off",
+        "require-jsdoc": "off",
+        "camelcase": "off"
     }
 }
