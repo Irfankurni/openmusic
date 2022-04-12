@@ -12,13 +12,12 @@ class SongsService {
   }
 
   async addSong({title, year, genre, performer, duration, albumId}) {
-    const id = 'songs - ' + nanoid(16);
+    const id = `song- ${nanoid(16)}`;
     const createdAt = new Date().toISOString();
-    const updatedAt = createdAt;
 
     const query = {
-      text: 'INSERT INTO songs VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id',
-      values: [id, title, year, genre, performer, duration, albumId, createdAt, updatedAt],
+      text: 'INSERT INTO songs VALUES($1, $2, $3, $4, $5, $6, $7, $8, $8) RETURNING id',
+      values: [id, title, year, genre, performer, duration, albumId, createdAt],
     };
 
     const result = await this._pool.query(query);
@@ -38,8 +37,6 @@ class SongsService {
         text: 'SELECT id, title, performer FROM songs WHERE LOWER(title) LIKE $1',
         values: [`%${title}%`],
       };
-      console.log(title);
-      console.log(`${title}`);
       filteredSongs = await this._pool.query(query);
     }
 
@@ -47,7 +44,7 @@ class SongsService {
       filteredSongs = await this._pool.query(`SELECT id, title, performer FROM songs WHERE LOWER(performer) LIKE '%${performer}%'`);
     }
 
-    return filteredSongs.rows.map(mapDBToModelSong);
+    return filteredSongs.rows;
   }
 
   async getSongById(id) {

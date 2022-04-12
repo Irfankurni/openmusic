@@ -4,7 +4,6 @@ const {nanoid} = require('nanoid');
 const InvariantError = require('../../exceptions/InvariantError');
 const NotFoundError = require('../../exceptions/NotFoundError');
 const {mapDBToModel} = require('../../utils/album');
-const {mapDBToModelSong} = require('../../utils/song');
 
 class AlbumsService {
   constructor() {
@@ -12,13 +11,12 @@ class AlbumsService {
   }
 
   async addAlbums({name, year}) {
-    const id = nanoid(16);
+    const id = `album-${nanoid(16)}`;
     const createdAt = new Date().toISOString();
-    const updatedAt = createdAt;
 
     const query = {
-      text: 'INSERT INTO albums VALUES($1, $2, $3, $4, $5) RETURNING id',
-      values: [id, name, year, createdAt, updatedAt],
+      text: 'INSERT INTO albums VALUES($1, $2, $3, $4, $4) RETURNING id',
+      values: [id, name, year, createdAt],
     };
 
     const result = await this._pool.query(query);
@@ -78,7 +76,7 @@ class AlbumsService {
       values: [id],
     };
     const result = await this._pool.query(query);
-    return result.rows.map(mapDBToModelSong);
+    return result.rows;
   }
 }
 
