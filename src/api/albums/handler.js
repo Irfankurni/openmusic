@@ -1,3 +1,4 @@
+/* eslint-disable require-jsdoc */
 const ClientError = require('../../exceptions/ClientError');
 
 class AlbumsHandler {

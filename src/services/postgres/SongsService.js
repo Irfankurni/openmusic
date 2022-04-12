@@ -1,3 +1,5 @@
+/* eslint-disable max-len */
+/* eslint-disable require-jsdoc */
 const {Pool} = require('pg');
 const {nanoid} = require('nanoid');
 const InvariantError = require('../../exceptions/InvariantError');
@@ -10,7 +12,7 @@ class SongsService {
   }
 
   async addSong({title, year, genre, performer, duration, albumId}) {
-    const id = "songs - " + nanoid(16);
+    const id = 'songs - ' + nanoid(16);
     const createdAt = new Date().toISOString();
     const updatedAt = createdAt;
 

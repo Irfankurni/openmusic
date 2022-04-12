@@ -1,3 +1,5 @@
+/* eslint-disable max-len */
+/* eslint-disable require-jsdoc */
 const ClientError = require('../../exceptions/ClientError');
 
 class SongsHandler {

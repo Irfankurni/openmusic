@@ -1,9 +1,10 @@
+/* eslint-disable require-jsdoc */
 const {Pool} = require('pg');
 const {nanoid} = require('nanoid');
 const InvariantError = require('../../exceptions/InvariantError');
 const NotFoundError = require('../../exceptions/NotFoundError');
-const { mapDBToModel } = require('../../utils/album');
-const { mapDBToModelSong } = require('../../utils/song');
+const {mapDBToModel} = require('../../utils/album');
+const {mapDBToModelSong} = require('../../utils/song');
 
 class AlbumsService {
   constructor() {
@@ -46,6 +47,7 @@ class AlbumsService {
   async editAlbumsById(id, {name, year}) {
     const updatedAt = new Date().toISOString();
     const query = {
+      // eslint-disable-next-line max-len
       text: 'UPDATE albums SET name = $1, year = $2, updated_at = $3 WHERE id = $4 RETURNING id',
       values: [name, year, updatedAt, id],
     };
