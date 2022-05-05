@@ -14,7 +14,6 @@ const TokenManager = {
       throw new InvariantError('Refresh token tidak valid');
     }
   },
-
 };
 
 module.exports = TokenManager;
