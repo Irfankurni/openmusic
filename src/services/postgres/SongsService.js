@@ -1,7 +1,7 @@
 const {Pool} = require('pg');
 const {nanoid} = require('nanoid');
 const InvariantError = require('../../exceptions/InvariantError');
-const {mapDBToModelSong} = require('../../utils/song');
+const {mapSongDBToModel} = require('../../utils');
 const NotFoundError = require('../../exceptions/NotFoundError');
 
 class SongsService {
@@ -9,40 +9,54 @@ class SongsService {
     this._pool = new Pool();
   }
 
-  async addSong({title, year, genre, performer, duration, albumId}) {
-    const id = `song- ${nanoid(16)}`;
+  async addSong({
+    title, year, performer, genre, duration, albumId,
+  }) {
+    const id = `song-${nanoid(16)}`;
     const createdAt = new Date().toISOString();
-
     const query = {
       text: 'INSERT INTO songs VALUES($1, $2, $3, $4, $5, $6, $7, $8, $8) RETURNING id',
-      values: [id, title, year, genre, performer, duration, albumId, createdAt],
+      values: [id, title, year, performer, genre, duration, albumId, createdAt],
     };
 
     const result = await this._pool.query(query);
-
     if (!result.rows[0].id) {
-      throw new InvariantError('Song gagal ditambahkan');
+      throw new InvariantError('Lagu gagal ditambahkan');
     }
 
     return result.rows[0].id;
   }
 
   async getSongs(title, performer) {
-    let filteredSongs = await this._pool.query('SELECT id, title, performer FROM songs');
+    let query;
 
-    if (title !== undefined) {
-      const query = {
-        text: 'SELECT id, title, performer FROM songs WHERE LOWER(title) LIKE $1',
+    if (title && performer) {
+      query = {
+        text: 'SELECT id, title, performer FROM songs WHERE LOWER (title) LIKE $1 AND LOWER (performer) LIKE $2',
+        values: [`%${title}%`, `%${performer}%`],
+      };
+    } else if (title) {
+      query = {
+        text: 'SELECT id, title, performer FROM songs WHERE LOWER (title) LIKE $1',
         values: [`%${title}%`],
       };
-      filteredSongs = await this._pool.query(query);
+    } else if (performer) {
+      query = {
+        text: 'SELECT id, title, performer FROM songs WHERE LOWER (performer) LIKE $1',
+        values: [`%${performer}%`],
+      };
+    } else {
+      query = {
+        text: 'SELECT id, title, performer FROM songs',
+      };
     }
 
-    if (performer !== undefined) {
-      filteredSongs = await this._pool.query(`SELECT id, title, performer FROM songs WHERE LOWER(performer) LIKE '%${performer}%'`);
-    }
+    const result = await this._pool.query(query);
 
-    return filteredSongs.rows;
+    if (!result.rowCount) {
+      throw new NotFoundError('Lagu tidak ditemukan');
+    }
+    return result.rows.map(mapSongDBToModel);
   }
 
   async getSongById(id) {
@@ -50,26 +64,27 @@ class SongsService {
       text: 'SELECT * FROM songs WHERE id = $1',
       values: [id],
     };
+
     const result = await this._pool.query(query);
 
     if (!result.rows.length) {
-      throw new NotFoundError('Song tidak ditemukan');
+      throw new NotFoundError('Lagu tidak ditemukan');
     }
-
-    return result.rows.map(mapDBToModelSong)[0];
+    return result.rows.map(mapSongDBToModel)[0];
   }
 
-  async editSongById(id, {title, year, genre, performer, duration, albumId}) {
+  async editSongById(id, {
+    title, year, performer, genre, duration,
+  }) {
     const updatedAt = new Date().toISOString();
     const query = {
-      text: 'UPDATE songs SET title = $1, year = $2, genre = $3, performer = $4, duration = $5, "albumId" = $6, updated_at = $7 WHERE id = $8 RETURNING id',
-      values: [title, year, genre, performer, duration, albumId, updatedAt, id],
+      text: 'UPDATE songs SET title = $1, year = $2, performer = $3, genre = $4, duration = $5, updated_at = $6 WHERE id = $7 RETURNING id',
+      values: [title, year, performer, genre, duration, updatedAt, id],
     };
-
     const result = await this._pool.query(query);
 
     if (!result.rows.length) {
-      throw new NotFoundError('Gagal memperbarui song. Id tidak ditemukan');
+      throw new NotFoundError('Gagal memperbarui lagu. Id tidak ditemukan');
     }
   }
 
@@ -80,9 +95,8 @@ class SongsService {
     };
 
     const result = await this._pool.query(query);
-
     if (!result.rows.length) {
-      throw new NotFoundError('song gagal dihapus. Id tidak ditemukan');
+      throw new NotFoundError('Lagu gagal dihapus. Id tidak ditemukan');
     }
   }
 }

@@ -3,57 +3,64 @@ class AlbumsHandler {
     this._service = service;
     this._validator = validator;
 
-    this.postAlbumsHandler = this.postAlbumsHandler.bind(this);
-    this.getAlbumsByIdHandler = this.getAlbumsByIdHandler.bind(this);
-    this.putAlbumsByIdHandler = this.putAlbumsByIdHandler.bind(this);
-    this.deleteAlbumsByIdHandler = this.deleteAlbumsByIdHandler.bind(this);
+    this.postAlbumHandler = this.postAlbumHandler.bind(this);
+    this.getAlbumByIdHandler = this.getAlbumByIdHandler.bind(this);
+    this.putAlbumByIdHandler = this.putAlbumByIdHandler.bind(this);
+    this.deleteAlbumByIdHandler = this.deleteAlbumByIdHandler.bind(this);
   }
 
-  async postAlbumsHandler(request, h) {
-    this._validator.validateAlbumsPayload(request.payload);
+  async postAlbumHandler(request, h) {
+    this._validator.validateAlbumPayload(request.payload);
+    const {name = 'untitled', year} = request.payload;
 
-    const albumsId = await this._service.addAlbums(request.payload);
+    const albumId = await this._service.addAlbum({name, year});
 
     const response = h.response({
       status: 'success',
-      message: 'Albums berhasil ditambahkan',
+      message: 'Album berhasil ditambahkan',
       data: {
-        albumId: albumsId,
+        albumId,
       },
     });
     response.code(201);
     return response;
   }
 
-  async getAlbumsByIdHandler(request) {
+  async getAlbumByIdHandler(request) {
     const {id} = request.params;
-    const album = await this._service.getAlbumsById(id);
-    const songs = await this._service.getSongsInAlbum(id);
-    const getDetailAlbumWichContainsSongs = {...album, songs};
+    const album = await this._service.getAlbumById(id);
+    const songs = await this._service.getSongsByAlbumId(id);
+
+    const albumContainsSongs = {...album, songs};
+
     return {
       status: 'success',
       data: {
-        album: getDetailAlbumWichContainsSongs,
+        album: albumContainsSongs,
       },
     };
   }
 
-  async putAlbumsByIdHandler(request) {
-    this._validator.validateAlbumsPayload(request.payload);
+  async putAlbumByIdHandler(request) {
+    this._validator.validateAlbumPayload(request.payload);
     const {id} = request.params;
-    await this._service.editAlbumsById(id, request.payload);
+    const {name, year} = request.payload;
+
+    await this._service.editAlbumById(id, {name, year});
+
     return {
       status: 'success',
-      message: 'Albums berhasil diperbarui',
+      message: 'Album berhasil diperbarui',
     };
   }
 
-  async deleteAlbumsByIdHandler(request) {
+  async deleteAlbumByIdHandler(request) {
     const {id} = request.params;
-    await this._service.deleteAlbumsById(id);
+    await this._service.deleteAlbumById(id);
+
     return {
       status: 'success',
-      message: 'Albums berhasil dihapus',
+      message: 'Album berhasil dihapus',
     };
   }
 }
